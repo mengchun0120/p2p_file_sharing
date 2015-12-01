@@ -1,0 +1,12 @@
+format of my own trace
+send: time addr send uid pid req reqid adv
+recv: time addr recv uid pid src req reqid adv
+sup-req-by-req: time addr sup-req-by-req uid src req-target reqid help-count req-count
+resp-wait/resp-fast: time addr resp-wait/resp-fast uid src reqid resp-list
+sup-req-by-clear: time addr sup-req-by-clear uid src req reqid help-count adv-count
+confirm-wait: time addr confirm-wait uid src req reqid
+sup-req-by-confirm: time addr sup-req-by-confirm uid src reqid help-count adv-count
+req: time addr req uid target reqid provider-count req-list
+send-clear: time addr send-clear uid req reqid data-list
+send-confirm: time addr send-confirm uid replier reqid req-list
+send-cancel: time addr send-cancel uid dest cancel-list

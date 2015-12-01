@@ -1,0 +1,100 @@
+Upon timeout of request timer
+	if provider-list is empty then
+		broadcast unbiased request
+	else
+		d = the latest provider in provider-list
+		broadcast biased request to d
+	end if
+
+Upon receipt of a request
+	if the request timer is pending and will expire soon then
+		f = help factor of the request
+		if f >= minimum help factor then
+			postpone the request timer
+		end if
+	end if
+
+	if the sending list is full then return
+
+	if the request is unbiased then
+		S = the set of packet ids that this node can reply
+		if S is not empty then
+			start the send wait timer
+		end if
+	else if the request is meant for this node then
+		S = the set of packet ids that this node can reply
+		if S is not empty then
+			add S to sending list
+			if the send timer hasn't started yet then
+				start send timer
+			end if
+		end if
+	end if
+
+Upon timeout of send wait timer
+	if the timer hasn't been confirmed then
+		send advertisement to the corresponding requestor
+		reschedule the timer
+	else
+		delete S
+	end if
+
+Upon receipt of advertisement
+	if the advertisement is sent to this node then
+		add the source node into provider-list and mark it as a potential provider
+		if the corresponding request hasn't been replied then
+			mark this node as a request agent
+			send confirm to the responder
+		end if
+	else
+		if there is still send-wait-timer pending for the same request then
+			cancel the timer
+		end if
+
+		calculate the help factor of this advertisement
+		if the help factor is greater than something then
+			add the source node into provider-list and mark it as a potential provider
+			if the request timer will expire soon then
+				postpone the request timer
+			end if
+		end if
+	end if
+
+Upon receipt of confirm
+	if the confirm is sent to this node then
+		S = a subset of the packet ids that this node can reply
+		put S into the sending-list
+		if the send timer hasn't started yet then
+			start send timer
+		end if
+	else
+		if there is send-wait-timer pending for the corresponding request then
+			cancel the timer
+		end if
+	end if
+
+Upon timeout of send timer
+	if the sending-list is not empty then
+		get a packet
+		attach the packet with the advertisement of sending-list
+		broadcast the packet
+	end if
+
+Upon receipt of data packet
+	if this node hasn't received the packet before then
+		insert it into history
+	end if
+
+	if this node is request agent then
+		if the packet is the last packet then
+			mark the provider as potential
+			send request
+		else the packet is in the last three packets in the current cycle then
+			start count-down
+		else
+			reschedule the request timer with short timeout
+		end if
+	else
+		update the provider-list
+		reschedule the request timer with long timeout
+	end if
